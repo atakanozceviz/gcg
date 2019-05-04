@@ -40,6 +40,15 @@ var generateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().IntP("milestone","m",0,"milestone number")
+	generateCmd.Flags().StringP("owner","o","","owner of the repo")
+	generateCmd.Flags().StringP("repo","r","","name of the repo")
+	generateCmd.Flags().StringP("state","s","","state of the issues to fetch")
+
+	err := viper.BindPFlags(generateCmd.Flags())
+	if err != nil {
+		er(err)
+	}
 }
 
 type TplData struct {
