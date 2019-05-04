@@ -15,7 +15,7 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate changelog",
 	Long: `Generates changelog based on a milestone.
-Use the config.yaml file to customize the generated output.`,
+Edit the config.yaml file to customize the generated output.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := &Config{}
 		err := viper.Unmarshal(c)
