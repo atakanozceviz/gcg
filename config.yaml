@@ -6,31 +6,32 @@ state: closed
 groups:
   - labels:
       - breaking change
-    title: "### Breaking Changes"
+    title: "Breaking Changes"
 
   - labels:
       - feature
-    title: "### Features"
+    title: "Features"
 
   - labels:
       - enhancement
-    title: "### Enhancements"
+    title: "Enhancements"
 
   - labels:
       - bug
-    title: "### Bug Fixes"
+    title: "Bug Fixes"
 
   - labels:
-    title: "### Others"
+    title: "Others"
+
 #template: |-
 #  ## [{{.Milestone.GetTitle}}]({{.Milestone.GetHTMLURL}})
 #  {{range .TitledIssues}}
-#  {{.Title}}
+#  ### {{.Title}}
 #  {{range .Issues}}
 #  {{- if isPR .GetHTMLURL}}
-#  - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
+#  * PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
 #  {{- else}}
-#  - ISSUE [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}}
+#  * ISSUE [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}}
 #  {{- end}}
 #  {{- end}}
 #  {{end}}
