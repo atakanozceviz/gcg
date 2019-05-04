@@ -61,7 +61,7 @@ func createChangelog(td *TplData) (string, error) {
 	if template == "" {
 		template = `## [{{.Milestone.GetTitle}}]({{.Milestone.GetHTMLURL}})
 {{range .TitledIssues}}
-{{.Title}}
+### {{.Title}}
 {{range .Issues}}
 {{- if isPR .GetHTMLURL}}
 - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
