@@ -1,0 +1,36 @@
+---
+owner: abpframework
+repo: abp
+milestone: 15
+state: closed
+groups:
+  - labels:
+      - breaking change
+    title: "### Breaking Changes"
+
+  - labels:
+      - feature
+    title: "### Features"
+
+  - labels:
+      - enhancement
+    title: "### Enhancements"
+
+  - labels:
+      - bug
+    title: "### Bug Fixes"
+
+  - labels:
+    title: "### Others"
+#template: |-
+#  ## [{{.Milestone.GetTitle}}]({{.Milestone.GetHTMLURL}})
+#  {{range .TitledIssues}}
+#  {{.Title}}
+#  {{range .Issues}}
+#  {{- if isPR .GetHTMLURL}}
+#  - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
+#  {{- else}}
+#  - ISSUE [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}}
+#  {{- end}}
+#  {{- end}}
+#  {{end}}
