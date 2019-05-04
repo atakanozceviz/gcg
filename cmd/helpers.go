@@ -3,9 +3,9 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"regexp"
+	"text/template"
 )
 
 func executeTemplate(tmplStr string, data interface{}) (string, error) {
