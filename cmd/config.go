@@ -3,6 +3,7 @@ package cmd
 type Config struct {
 	Owner     string `yaml:"owner"`
 	Repo      string `yaml:"repo"`
+	Token     string `yaml:"token"`
 	Milestone int    `yaml:"milestone"`
 	State     string `yaml:"state"`
 	Groups    []struct {
