@@ -1,16 +1,16 @@
 package cmd
 
 type Config struct {
-	Owner     string `yaml:"owner"`
-	Repo      string `yaml:"repo"`
-	Token     string `yaml:"token"`
-	Milestone int    `yaml:"milestone"`
-	State     string `yaml:"state"`
+	Owner     string `mapstructure:"owner"`
+	Repo      string `mapstructure:"repo"`
+	Token     string `mapstructure:"token"`
+	Milestone int    `mapstructure:"milestone"`
+	State     string `mapstructure:"state"`
 	Groups    []struct {
-		Labels []string `yaml:"labels"`
-		Title  string   `yaml:"title"`
-	} `yaml:"groups"`
-	Template string `yaml:"template"`
+		Labels []string `mapstructure:"labels"`
+		Title  string   `mapstructure:"title"`
+	} `mapstructure:"groups"`
+	Template string `mapstructure:"template"`
 }
 
 func (c *Config) AllLabels() map[int][]string {
