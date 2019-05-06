@@ -5,5 +5,5 @@
 *.dylib
 *.test
 *.out
-.idea
-.vscode
+.idea/
+.vscode/
