@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
@@ -23,7 +22,7 @@ Edit the config.yaml file to customize the generated output.`,
 		if err != nil {
 			er(err)
 		}
-		ti, err := getIssues(c)
+		ti, err := issuesByMilestone(c)
 		if err != nil {
 			er(err)
 		}
@@ -79,61 +78,6 @@ func createChangelog(td *TplData) (string, error) {
 	return executeTemplate(template, td)
 }
 
-func getIssues(config *Config) (*TitledIssues, error) {
-	ctx := context.Background()
-	client := github.NewClient(nil)
-
-	if config.Token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: config.Token},
-		)
-		tc := oauth2.NewClient(ctx, ts)
-		client = github.NewClient(tc)
-	}
-
-	result := &TitledIssues{}
-	grouped := make(map[string][]*github.Issue)
-
-	opt := &github.IssueListByRepoOptions{
-		Milestone: strconv.Itoa(config.Milestone),
-		State:     config.State,
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	var allIssues []*github.Issue
-	for {
-		issues, resp, err := client.Issues.ListByRepo(ctx, config.Owner, config.Repo, opt)
-		if err != nil {
-			return nil, err
-		}
-		allIssues = append(allIssues, issues...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
-	}
-
-	for _, issue := range allIssues {
-		if i, ok := containsAny(issue.Labels, config.AllLabels()); ok {
-			grouped[config.Groups[i].Title] = append(grouped[config.Groups[i].Title], issue)
-		} else {
-			grouped["no_label"] = append(grouped["no_label"], issue)
-		}
-	}
-
-	for _, group := range config.Groups {
-		if len(group.Labels) == 0 {
-			*result = append(*result, &TitledIssue{Title: group.Title, Issues: grouped["no_label"]})
-			continue
-		}
-		*result = append(*result, &TitledIssue{Title: group.Title, Issues: grouped[group.Title]})
-	}
-
-	return result, nil
-}
-
 func getMilestone(config *Config) (*github.Milestone, error) {
 	client := github.NewClient(nil)
 
@@ -150,17 +94,4 @@ func getMilestone(config *Config) (*github.Milestone, error) {
 		return nil, err
 	}
 	return milestone, nil
-}
-
-func containsAny(s []github.Label, e map[int][]string) (int, bool) {
-	for _, a := range s {
-		for i, b := range e {
-			for _, y := range b {
-				if a.GetName() == y {
-					return i, true
-				}
-			}
-		}
-	}
-	return 0, false
 }
