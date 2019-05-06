@@ -67,7 +67,7 @@ func createChangelog(td *TplData) (string, error) {
 {{range .TitledIssues}}
 ### {{.Title}}
 {{range .Issues}}
-{{- if isPR .GetHTMLURL}}
+{{- if .IsPullRequest }}
 - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
 {{- else}}
 - ISSUE [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}}
