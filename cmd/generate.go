@@ -98,16 +98,24 @@ func getIssues(config *Config) (*TitledIssues, error) {
 		Milestone: strconv.Itoa(config.Milestone),
 		State:     config.State,
 		ListOptions: github.ListOptions{
-			PerPage: 2147483647,
+			PerPage: 100,
 		},
 	}
 
-	issues, _, err := client.Issues.ListByRepo(ctx, config.Owner, config.Repo, opt)
-	if err != nil {
-		return nil, err
+	var allIssues []*github.Issue
+	for {
+		issues, resp, err := client.Issues.ListByRepo(ctx, config.Owner, config.Repo, opt)
+		if err != nil {
+			return nil, err
+		}
+		allIssues = append(allIssues, issues...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
 
-	for _, issue := range issues {
+	for _, issue := range allIssues {
 		if i, ok := containsAny(issue.Labels, config.AllLabels()); ok {
 			grouped[config.Groups[i].Title] = append(grouped[config.Groups[i].Title], issue)
 		} else {
