@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 type Config struct {
 	Repo      string   `mapstructure:"repo"`

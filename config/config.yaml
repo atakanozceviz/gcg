@@ -1,6 +1,6 @@
 ---
 repo: abpframework/abp
-token: 
+token:
 milestone: 0.17
 since-tag: 0.15.0
 until-tag: 0.16.0

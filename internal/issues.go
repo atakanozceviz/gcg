@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"github.com/google/go-github/github"
@@ -9,7 +9,7 @@ type GroupedIssues struct {
 	Issues []*github.Issue
 }
 
-func groupIssues(groups []*Group, issues []*github.Issue) []*GroupedIssues {
+func GroupIssues(groups []*Group, issues []*github.Issue) []*GroupedIssues {
 	if issues == nil {
 		return nil
 	}

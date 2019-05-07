@@ -7,15 +7,15 @@ import (
 	"text/template"
 )
 
-func executeTemplate(tmplStr string, data interface{}) (string, error) {
+func executeTemplate(tmplStr string, data interface{}) ([]byte, error) {
 	tmpl, err := template.New("").Parse(tmplStr)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, data)
-	return buf.String(), err
+	return buf.Bytes(), err
 }
 
 func er(msg interface{}) {

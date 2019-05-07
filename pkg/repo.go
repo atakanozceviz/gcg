@@ -1,4 +1,4 @@
-package cmd
+package pkg
 
 import (
 	"context"
@@ -84,7 +84,7 @@ func FilterUntil(issues []*github.Issue, until time.Time) []*github.Issue {
 	return fi
 }
 
-func (gr *GitHubRepo) AllIssues(state ...string) []*github.Issue {
+func (gr *GitHubRepo) AllIssues(state ...string) ([]*github.Issue, error) {
 	client := github.NewClient(nil)
 
 	if gr.token != "" {
@@ -105,7 +105,7 @@ func (gr *GitHubRepo) AllIssues(state ...string) []*github.Issue {
 	for {
 		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
-			er(err)
+			return nil, err
 		}
 		allIssues = append(allIssues, issues...)
 		if resp.NextPage == 0 {
@@ -113,12 +113,12 @@ func (gr *GitHubRepo) AllIssues(state ...string) []*github.Issue {
 		}
 		opt.Page = resp.NextPage
 	}
-	return allIssues
+	return allIssues, nil
 }
 
-func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) []*github.Issue {
+func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) ([]*github.Issue, error) {
 	if milestone == "" {
-		return nil
+		return nil, nil
 	}
 	client := github.NewClient(nil)
 
@@ -131,8 +131,11 @@ func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) []*gi
 	}
 
 	var allIssues []*github.Issue
-	mil := gr.Milestone(milestone).GetNumber()
-	opt := &github.IssueListByRepoOptions{Milestone: strconv.Itoa(mil), State: "closed", ListOptions: github.ListOptions{PerPage: 100}}
+	mil, err := gr.Milestone(milestone)
+	if err != nil {
+		return nil, err
+	}
+	opt := &github.IssueListByRepoOptions{Milestone: strconv.Itoa(mil.GetNumber()), State: "closed", ListOptions: github.ListOptions{PerPage: 100}}
 	if len(state) == 1 {
 		if state[0] == "open" || state[0] == "closed" || state[0] == "all" {
 			opt.State = state[0]
@@ -141,7 +144,7 @@ func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) []*gi
 	for {
 		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
-			er(err)
+			return nil, err
 		}
 		allIssues = append(allIssues, issues...)
 		if resp.NextPage == 0 {
@@ -149,12 +152,12 @@ func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) []*gi
 		}
 		opt.Page = resp.NextPage
 	}
-	return allIssues
+	return allIssues, nil
 }
 
-func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) []*github.Issue {
+func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) ([]*github.Issue, error) {
 	if time.IsZero() {
-		return nil
+		return nil, nil
 	}
 	client := github.NewClient(nil)
 
@@ -176,7 +179,7 @@ func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) []*github.Iss
 	for {
 		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
-			er(err)
+			return nil, err
 		}
 		allIssues = append(allIssues, issues...)
 		if resp.NextPage == 0 {
@@ -184,10 +187,10 @@ func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) []*github.Iss
 		}
 		opt.Page = resp.NextPage
 	}
-	return allIssues
+	return allIssues, nil
 }
 
-func (gr *GitHubRepo) Tags() []*github.RepositoryTag {
+func (gr *GitHubRepo) Tags() ([]*github.RepositoryTag, error) {
 	client := github.NewClient(nil)
 	if gr.token != "" {
 		ts := oauth2.StaticTokenSource(
@@ -205,7 +208,7 @@ func (gr *GitHubRepo) Tags() []*github.RepositoryTag {
 			opt,
 		)
 		if err != nil {
-			er(err)
+			return nil, err
 		}
 		allTags = append(allTags, tags...)
 		if resp.NextPage == 0 {
@@ -213,10 +216,10 @@ func (gr *GitHubRepo) Tags() []*github.RepositoryTag {
 		}
 		opt.Page = resp.NextPage
 	}
-	return allTags
+	return allTags, nil
 }
 
-func (gr *GitHubRepo) Milestones() []*github.Milestone {
+func (gr *GitHubRepo) Milestones() ([]*github.Milestone, error) {
 	client := github.NewClient(nil)
 	if gr.token != "" {
 		ts := oauth2.StaticTokenSource(
@@ -234,7 +237,7 @@ func (gr *GitHubRepo) Milestones() []*github.Milestone {
 			opt,
 		)
 		if err != nil {
-			er(err)
+			return nil, err
 		}
 		allMilestones = append(allMilestones, milestones...)
 		if resp.NextPage == 0 {
@@ -242,29 +245,32 @@ func (gr *GitHubRepo) Milestones() []*github.Milestone {
 		}
 		opt.Page = resp.NextPage
 	}
-	return allMilestones
+	return allMilestones, nil
 }
 
-func (gr *GitHubRepo) Milestone(title string) *github.Milestone {
+func (gr *GitHubRepo) Milestone(title string) (*github.Milestone, error) {
 	if title == "" {
-		return nil
+		return nil, nil
 	}
 	if gr.milestone.GetTitle() == title {
-		return gr.milestone
+		return gr.milestone, nil
 	}
-	milestones := gr.Milestones()
+	milestones, err := gr.Milestones()
+	if err != nil {
+		return nil, err
+	}
 	for _, milestone := range milestones {
 		if milestone.GetTitle() == title {
 			gr.milestone = milestone
-			return milestone
+			return milestone, nil
 		}
 	}
-	return nil
+	return nil, fmt.Errorf("you didn't pass a valid milestone title")
 }
 
-func (gr *GitHubRepo) TagCommit(name string) *github.Commit {
+func (gr *GitHubRepo) TagCommit(name string) (*github.Commit, error) {
 	if name == "" {
-		return nil
+		return nil, nil
 	}
 	client := github.NewClient(nil)
 	if gr.token != "" {
@@ -277,7 +283,7 @@ func (gr *GitHubRepo) TagCommit(name string) *github.Commit {
 
 	refs, _, err := client.Git.GetRefs(context.Background(), gr.repoOwner, gr.repoName, "tags")
 	if err != nil {
-		er(err)
+		return nil, err
 	}
 
 	sha := ""
@@ -293,26 +299,27 @@ func (gr *GitHubRepo) TagCommit(name string) *github.Commit {
 	}
 
 	if sha == "" {
-		er(fmt.Errorf("you didn't pass a valid tag name. the available tags are: %s", tags))
+		return nil, fmt.Errorf("you didn't pass a valid tag name. the available tags are: %s", tags)
 	}
 
 	commit, _, err := client.Git.GetCommit(context.Background(), gr.repoOwner, gr.repoName, sha)
 	if err != nil {
-		er(err)
+		return nil, err
 	}
 
-	return commit
+	return commit, err
 }
 
-func checkrate() {
+func checkrate() error {
 	client := github.NewClient(nil)
 	rl, _, err := client.RateLimits(context.Background())
 	if err != nil {
-		er(err)
+		return err
 	}
 	if rl.Core.Remaining == 0 {
 		fmt.Println("GitHub API rate limit exceeded!")
 		fmt.Printf("GitHub API rate limit resets on %s\n", rl.Core.Reset.Format("2-Jan-2006 15:04:05"))
 		os.Exit(1)
 	}
+	return nil
 }
