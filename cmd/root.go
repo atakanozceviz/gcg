@@ -12,7 +12,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "GithubChangelogGenerator",
+	Use:   "gcg",
 	Short: "Changelog generator",
 	Long:  `This application is a tool to generate changelog from a Github milestone.`,
 }

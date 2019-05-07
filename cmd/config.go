@@ -1,21 +1,24 @@
 package cmd
 
 type Config struct {
-	Owner     string `mapstructure:"owner"`
-	Repo      string `mapstructure:"repo"`
-	Token     string `mapstructure:"token"`
-	Milestone int    `mapstructure:"milestone"`
-	State     string `mapstructure:"state"`
-	Groups    []struct {
-		Labels []string `mapstructure:"labels"`
-		Title  string   `mapstructure:"title"`
-	} `mapstructure:"groups"`
-	Template string `mapstructure:"template"`
+	Repo      string   `mapstructure:"repo"`
+	Token     string   `mapstructure:"token"`
+	Milestone string   `mapstructure:"milestone"`
+	SinceTag  string   `mapstructure:"since-tag"`
+	UntilTag  string   `mapstructure:"until-tag"`
+	State     string   `mapstructure:"state"`
+	Groups    []*Group `mapstructure:"groups"`
+	Template  string   `mapstructure:"template"`
 }
 
-func (c *Config) AllLabels() map[int][]string {
+type Group struct {
+	Labels []string `mapstructure:"labels"`
+	Title  string   `mapstructure:"title"`
+}
+
+func AllLabels(groups []*Group) map[int][]string {
 	allLabels := make(map[int][]string)
-	for i, group := range c.Groups {
+	for i, group := range groups {
 		if allLabels[i] == nil {
 			allLabels[i] = make([]string, 0)
 		}

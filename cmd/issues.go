@@ -1,84 +1,38 @@
 package cmd
 
 import (
-	"context"
-	"strconv"
-
 	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 )
 
-type TitledIssue struct {
+type GroupedIssues struct {
 	Title  string
 	Issues []*github.Issue
 }
 
-type TitledIssues []*TitledIssue
-
-func issuesByMilestone(config *Config) (*TitledIssues, error) {
-	opt := &github.IssueListByRepoOptions{
-		Milestone: strconv.Itoa(config.Milestone),
-		State:     config.State,
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
+func groupIssues(groups []*Group, issues []*github.Issue) []*GroupedIssues {
+	if issues == nil {
+		return nil
 	}
-	ctx := context.Background()
-	issues, err := allIssues(config, ctx, opt)
-	if err != nil {
-		return nil, err
-	}
-
-	return groupIssues(config, issues)
-}
-
-func allIssues(config *Config, ctx context.Context, opt *github.IssueListByRepoOptions) ([]*github.Issue, error) {
-	client := github.NewClient(nil)
-
-	if config.Token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: config.Token},
-		)
-		tc := oauth2.NewClient(ctx, ts)
-		client = github.NewClient(tc)
-	}
-
-	var allIssues []*github.Issue
-	for {
-		issues, resp, err := client.Issues.ListByRepo(ctx, config.Owner, config.Repo, opt)
-		if err != nil {
-			return nil, err
-		}
-		allIssues = append(allIssues, issues...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
-	}
-	return allIssues, nil
-}
-
-func groupIssues(config *Config, issues []*github.Issue) (*TitledIssues, error) {
-	result := &TitledIssues{}
+	var result []*GroupedIssues
 	grouped := make(map[string][]*github.Issue)
 
 	for _, issue := range issues {
-		if i, ok := containsAny(issue.Labels, config.AllLabels()); ok {
-			grouped[config.Groups[i].Title] = append(grouped[config.Groups[i].Title], issue)
+		if i, ok := containsAny(issue.Labels, AllLabels(groups)); ok {
+			grouped[groups[i].Title] = append(grouped[groups[i].Title], issue)
 		} else {
 			grouped["no_label"] = append(grouped["no_label"], issue)
 		}
 	}
 
-	for _, group := range config.Groups {
+	for _, group := range groups {
 		if len(group.Labels) == 0 {
-			*result = append(*result, &TitledIssue{Title: group.Title, Issues: grouped["no_label"]})
+			result = append(result, &GroupedIssues{Title: group.Title, Issues: grouped["no_label"]})
 			continue
 		}
-		*result = append(*result, &TitledIssue{Title: group.Title, Issues: grouped[group.Title]})
+		result = append(result, &GroupedIssues{Title: group.Title, Issues: grouped[group.Title]})
 	}
 
-	return result, nil
+	return result
 }
 
 func containsAny(s []github.Label, e map[int][]string) (int, bool) {
