@@ -310,6 +310,10 @@ func (gr *GitHubRepo) TagCommit(name string) (*github.Commit, error) {
 	return commit, err
 }
 
+func (gr *GitHubRepo) Repository() *github.Repository {
+	return gr.repo
+}
+
 func checkrate() error {
 	client := github.NewClient(nil)
 	rl, _, err := client.RateLimits(context.Background())

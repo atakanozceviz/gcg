@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/atakanozceviz/gcg/internal"
 	"github.com/atakanozceviz/gcg/pkg"
@@ -71,7 +73,8 @@ Edit the config.yaml file to customize the generated output.`,
 			er(err)
 		}
 
-		changelog, err := createChangelog(&TplData{
+		err = writeChangelog(os.Stdout, &TemplateData{
+			Repository:        repo.Repository(),
 			IssuesByMilestone: groupedIssuesByMilestone,
 			IssuesByTag:       groupedIssuesByTag,
 			Milestone:         milestone,
@@ -83,8 +86,6 @@ Edit the config.yaml file to customize the generated output.`,
 		if err != nil {
 			er(err)
 		}
-
-		fmt.Printf("%s", changelog)
 	},
 }
 
@@ -103,7 +104,8 @@ func init() {
 	}
 }
 
-type TplData struct {
+type TemplateData struct {
+	Repository        *github.Repository
 	IssuesByMilestone []*internal.GroupedIssues
 	IssuesByTag       []*internal.GroupedIssues
 	Milestone         *github.Milestone
@@ -113,7 +115,7 @@ type TplData struct {
 	UntilTagCommit    *github.Commit
 }
 
-func createChangelog(td *TplData) ([]byte, error) {
+func writeChangelog(w io.WriteCloser, td *TemplateData) error {
 	template := viper.GetString("template")
 	if template == "" {
 		template = `{{if .Milestone}}## {{.Milestone.GetTitle}} ({{.Milestone.GetClosedAt.Format "2006-01-02"}}){{end -}}
@@ -145,5 +147,14 @@ func createChangelog(td *TplData) ([]byte, error) {
 `
 	}
 
-	return executeTemplate(template, td)
+	result, err := executeTemplate(template, td)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(w, "%s", result)
+	if err != nil {
+		return err
+	}
+
+	return w.Close()
 }
