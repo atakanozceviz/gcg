@@ -59,7 +59,9 @@ Edit the config.yaml file to customize the generated output.`,
 			}
 		case untilTagCommit != nil:
 			issuesByTag, err = repo.AllIssues(c.State)
-			er(err)
+			if err != nil {
+				er(err)
+			}
 			issuesByTag = pkg.FilterUntil(issuesByTag, untilTagCommit.Committer.GetDate())
 		}
 
