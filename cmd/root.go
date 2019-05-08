@@ -14,7 +14,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "gcg",
 	Short: "Changelog generator",
-	Long:  `This application is a tool to generate changelog from a Github milestone.`,
+	Long:  `This application is a tool to generate changelog from a Github milestone or tag(s)`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

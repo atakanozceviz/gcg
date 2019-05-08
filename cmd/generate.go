@@ -16,7 +16,7 @@ import (
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate changelog",
-	Long: `Generates changelog based on a milestone.
+	Long: `Generates changelog based on a milestone or tag(s).
 Edit the config.yaml file to customize the generated output.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		c := &internal.Config{}
@@ -91,12 +91,12 @@ Edit the config.yaml file to customize the generated output.`,
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
-	generateCmd.Flags().StringP("milestone", "m", "", "Github milestone title to get issues and pull requests for")
-	generateCmd.Flags().StringP("repo", "r", "", "Repository name to generate the Changelog for, in the form user/repo")
-	generateCmd.Flags().String("since-tag", "", "Github issues and pull requests since tag")
-	generateCmd.Flags().StringP("state", "s", "", "State of the issues to get (open,closed or all)")
-	generateCmd.Flags().StringP("token", "t", "", "Github access token")
-	generateCmd.Flags().String("until-tag", "", "Github issues and pull requests until tag")
+	generateCmd.Flags().StringP("repo", "r", "", "repository name to generate the Changelog for, in the form user/repo")
+	generateCmd.Flags().StringP("token", "t", "", "personal access token")
+	generateCmd.Flags().StringP("milestone", "m", "", "milestone title to get issues and pull requests for")
+	generateCmd.Flags().String("since-tag", "", "issues and pull requests since tag")
+	generateCmd.Flags().String("until-tag", "", "issues and pull requests until tag")
+	generateCmd.Flags().StringP("state", "s", "", "state of the issues to get (open,closed or all)")
 
 	err := viper.BindPFlags(generateCmd.Flags())
 	if err != nil {
