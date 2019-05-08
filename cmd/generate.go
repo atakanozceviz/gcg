@@ -120,10 +120,10 @@ type TemplateData struct {
 func writeChangelog(w io.WriteCloser, td *TemplateData) error {
 	template := viper.GetString("template")
 	if template == "" {
-		template = `{{if .Milestone}}## {{.Milestone.GetTitle}} ({{.Milestone.GetClosedAt.Format "2006-01-02"}}){{end -}}
+		template = `{{if .Milestone}}# {{.Milestone.GetTitle}} ({{.Milestone.GetClosedAt.Format "2006-01-02"}}){{end -}}
 {{if .IssuesByMilestone}}
 {{range .IssuesByMilestone}}
-### {{.Title}}
+## {{.Title}}
 {{range .Issues}}
 {{if .IsPullRequest -}}
 - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
@@ -133,10 +133,10 @@ func writeChangelog(w io.WriteCloser, td *TemplateData) error {
 {{end}}
 {{end}}
 {{end -}}
-{{if .SinceTagCommit}}## {{.SinceTag}}{{if .UntilTagCommit}} - {{.UntilTag}}{{end}}{{end -}}
+{{if .SinceTagCommit}}# {{.SinceTag}}{{if .UntilTagCommit}} - {{.UntilTag}}{{end}}{{end -}}
 {{if .IssuesByTag}}
 {{range .IssuesByTag}}
-### {{.Title}}
+## {{.Title}}
 {{range .Issues}}
 {{if .IsPullRequest -}}
 - PR [\#{{.GetNumber}}]({{.GetHTMLURL}}): {{.GetTitle}} (by [{{.GetUser.GetLogin}}]({{.GetUser.GetHTMLURL}}))
