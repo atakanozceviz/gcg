@@ -27,3 +27,5 @@ Flags:
 Global Flags:
       --config string   config file (default is config.yaml)
 ```
+
+[Learn more about templating](Templating.md)
