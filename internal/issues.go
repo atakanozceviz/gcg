@@ -1,6 +1,10 @@
 package internal
 
 import (
+	"fmt"
+	"regexp"
+	"sort"
+
 	"github.com/google/go-github/github"
 )
 
@@ -35,15 +39,32 @@ func GroupIssues(groups []*Group, issues []*github.Issue) []*GroupedIssues {
 	return result
 }
 
-func containsAny(s []github.Label, e map[int][]string) (int, bool) {
-	for _, a := range s {
-		for i, b := range e {
-			for _, y := range b {
-				if a.GetName() == y {
-					return i, true
+func containsAny(gls []github.Label, cls map[int][]string) (int, bool) {
+	var keys []int
+	for k := range cls {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	for _, gl := range gls {
+		for _, k := range keys {
+			for _, l := range cls[k] {
+				if match(gl.GetName(), l) {
+					return k, true
 				}
 			}
 		}
 	}
 	return 0, false
+}
+
+func match(a, rx string) bool {
+	if a == rx {
+		return true
+	}
+	re, err := regexp.Compile(fmt.Sprintf("^%s$", rx))
+	if err != nil {
+		return false
+	}
+	return re.MatchString(a)
 }
