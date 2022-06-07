@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v45/github"
 	"golang.org/x/oauth2"
 )
 
@@ -281,7 +281,12 @@ func (gr *GitHubRepo) TagCommit(name string) (*github.Commit, error) {
 		client = github.NewClient(tc)
 	}
 
-	refs, _, err := client.Git.GetRefs(context.Background(), gr.repoOwner, gr.repoName, "tags")
+	refs, _, err := client.Git.ListMatchingRefs(context.Background(), gr.repoOwner, gr.repoName, &github.ReferenceListOptions{
+		Ref: "tags",
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}

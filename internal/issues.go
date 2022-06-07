@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v45/github"
 )
 
 type GroupedIssues struct {
@@ -39,7 +39,7 @@ func GroupIssues(groups []*Group, issues []*github.Issue) []*GroupedIssues {
 	return result
 }
 
-func containsAny(gls []github.Label, cls map[int][]string) (int, bool) {
+func containsAny(gls []*github.Label, cls map[int][]string) (int, bool) {
 	var keys []int
 	for k := range cls {
 		keys = append(keys, k)
