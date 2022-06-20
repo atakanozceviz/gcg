@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 )
 
-const version = "0.2.1"
+var version string
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
@@ -18,5 +19,14 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
+	bi, ok := debug.ReadBuildInfo()
+	if ok {
+		for _, info := range bi.Settings {
+			if info.Key == "vcs.revision" {
+				version = info.Value[0:7]
+			}
+		}
+	}
+
 	rootCmd.AddCommand(versionCmd)
 }

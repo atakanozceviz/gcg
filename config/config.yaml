@@ -1,7 +1,7 @@
 ---
 repo: abpframework/abp
 #token:
-milestone: 0.17
+milestone: 5.1
 #since-tag: 0.15.0
 #until-tag: 0.16.0
 state: closed

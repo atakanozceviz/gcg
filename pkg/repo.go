@@ -18,6 +18,7 @@ type GitHubRepo struct {
 	token     string
 	repo      *github.Repository
 	milestone *github.Milestone
+	cli       *github.Client
 }
 
 func NewRepo(repo string, token ...string) (*GitHubRepo, error) {
@@ -38,6 +39,7 @@ func NewRepo(repo string, token ...string) (*GitHubRepo, error) {
 		tc := oauth2.NewClient(context.Background(), ts)
 		client = github.NewClient(tc)
 	}
+	gr.cli = client
 
 	var err error
 	gr.repo, _, err = client.Repositories.Get(context.Background(), sx[0], sx[1])
@@ -85,16 +87,6 @@ func FilterUntil(issues []*github.Issue, until time.Time) []*github.Issue {
 }
 
 func (gr *GitHubRepo) AllIssues(state ...string) ([]*github.Issue, error) {
-	client := github.NewClient(nil)
-
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
-
 	var allIssues []*github.Issue
 	opt := &github.IssueListByRepoOptions{State: "closed", ListOptions: github.ListOptions{PerPage: 100}}
 	if len(state) == 1 {
@@ -103,7 +95,7 @@ func (gr *GitHubRepo) AllIssues(state ...string) ([]*github.Issue, error) {
 		}
 	}
 	for {
-		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
+		issues, resp, err := gr.cli.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -120,15 +112,6 @@ func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) ([]*g
 	if milestone == "" {
 		return nil, nil
 	}
-	client := github.NewClient(nil)
-
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
 
 	var allIssues []*github.Issue
 	mil, err := gr.Milestone(milestone)
@@ -142,7 +125,7 @@ func (gr *GitHubRepo) IssuesByMilestone(milestone string, state ...string) ([]*g
 		}
 	}
 	for {
-		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
+		issues, resp, err := gr.cli.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -159,15 +142,6 @@ func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) ([]*github.Is
 	if time.IsZero() {
 		return nil, nil
 	}
-	client := github.NewClient(nil)
-
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
 
 	var allIssues []*github.Issue
 	opt := &github.IssueListByRepoOptions{Since: time, State: "closed", ListOptions: github.ListOptions{PerPage: 100}}
@@ -177,7 +151,7 @@ func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) ([]*github.Is
 		}
 	}
 	for {
-		issues, resp, err := client.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
+		issues, resp, err := gr.cli.Issues.ListByRepo(context.Background(), gr.repoOwner, gr.repoName, opt)
 		if err != nil {
 			return nil, err
 		}
@@ -191,18 +165,10 @@ func (gr *GitHubRepo) IssuesSince(time time.Time, state ...string) ([]*github.Is
 }
 
 func (gr *GitHubRepo) Tags() ([]*github.RepositoryTag, error) {
-	client := github.NewClient(nil)
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
 	var allTags []*github.RepositoryTag
 	opt := &github.ListOptions{PerPage: 100}
 	for {
-		tags, resp, err := client.Repositories.ListTags(
+		tags, resp, err := gr.cli.Repositories.ListTags(
 			context.Background(),
 			gr.repoOwner, gr.repoName,
 			opt,
@@ -220,18 +186,10 @@ func (gr *GitHubRepo) Tags() ([]*github.RepositoryTag, error) {
 }
 
 func (gr *GitHubRepo) Milestones() ([]*github.Milestone, error) {
-	client := github.NewClient(nil)
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
 	var allMilestones []*github.Milestone
 	opt := &github.MilestoneListOptions{State: "all", ListOptions: github.ListOptions{PerPage: 100}}
 	for {
-		milestones, resp, err := client.Issues.ListMilestones(
+		milestones, resp, err := gr.cli.Issues.ListMilestones(
 			context.Background(),
 			gr.repoOwner, gr.repoName,
 			opt,
@@ -272,16 +230,8 @@ func (gr *GitHubRepo) TagCommit(name string) (*github.Commit, error) {
 	if name == "" {
 		return nil, nil
 	}
-	client := github.NewClient(nil)
-	if gr.token != "" {
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: gr.token},
-		)
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	}
 
-	refs, _, err := client.Git.ListMatchingRefs(context.Background(), gr.repoOwner, gr.repoName, &github.ReferenceListOptions{
+	refs, _, err := gr.cli.Git.ListMatchingRefs(context.Background(), gr.repoOwner, gr.repoName, &github.ReferenceListOptions{
 		Ref: "tags",
 		ListOptions: github.ListOptions{
 			PerPage: 100,
@@ -307,7 +257,7 @@ func (gr *GitHubRepo) TagCommit(name string) (*github.Commit, error) {
 		return nil, fmt.Errorf("you didn't pass a valid tag name. the available tags are: %s", tags)
 	}
 
-	commit, _, err := client.Git.GetCommit(context.Background(), gr.repoOwner, gr.repoName, sha)
+	commit, _, err := gr.cli.Git.GetCommit(context.Background(), gr.repoOwner, gr.repoName, sha)
 	if err != nil {
 		return nil, err
 	}
